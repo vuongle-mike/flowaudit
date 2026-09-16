@@ -4,6 +4,31 @@ Local security scanner and plugin for **Codex and Claude Code**: browser discove
 
 The three-command CLI handles the common path. The MCP integration remains available when Codex or Claude Code should make application-specific exploration and ASVS decisions. No additional model API key or hosted LLM service is required by the scanner.
 
+## Install in Claude Code (recommended)
+
+In Claude Code, run:
+
+```text
+/plugin marketplace add vuongle-mike/flowaudit
+/plugin install flowaudit@flowaudit-marketplace
+```
+
+Start a new session, then ask:
+
+```text
+/flowaudit:flowaudit Scan http://localhost:9000. Open the login browser so I can complete OTP, then continue with a passive scan and an offline report.
+```
+
+The repository root is the complete Claude plugin. It includes its own MCP launcher and runtime source; no checkout path, npm command or hand-written profile is needed. Node.js 20.19+ and npm must already be available. First use downloads locked dependencies and Chromium and builds a private runtime. macOS and Linux are the supported bootstrap platforms; Linux may require Playwright system libraries and a graphical display for login. The initial download can exceed the client's MCP startup timeout; see [setup recovery](docs/plugins.md#setup-recovery).
+
+`start_login` opens a real browser. Complete login/OTP there, then tell Claude you are done and provide a short non-secret protected-page label, such as “Invoices”. `finish_login` checks that the label is absent without authentication and saves the session locally. No Enter in a separate terminal is needed. Anonymous scans use `create_public_project` directly.
+
+For ZAP checks, Claude calls `prepare_zap`, polls `setup_status`, then calls `enable_project_zap` before starting the scan. Docker must already be installed and running. This starts a dedicated ZAP container on `127.0.0.1:18091`; the browser/scanner stay on the host so interactive login works. A target resolvable only on the host may still need Docker DNS/network configuration. If ZAP cannot start, browser exploration remains available and ZAP checks must be reported as untested.
+
+Profiles, session secrets, scan data and versioned runtimes live under `~/.local/share/flowaudit` (override with `FLOWAUDIT_HOME`). They are outside the plugin cache and survive plugin updates. New profiles are passive; active test workflows still need explicit scoped configuration. Cross-origin SSO and SPA authentication without a usable protected HTTP probe remain unsupported.
+
+To update: `/plugin marketplace update flowaudit-marketplace`, then `/plugin update flowaudit@flowaudit-marketplace`, then start a new session. The older bundles under `plugins/` are advanced adapters for separately managed scanner deployments.
+
 ## Rename from security-scan
 
 The plugin, MCP server, skill and CLI are now named `flowaudit` (display name: **FlowAudit**). Codex bundle: `plugins/codex/flowaudit`; Claude bundle: `plugins/claude/flowaudit`. Use `FLOWAUDIT_ROOT`, `FLOWAUDIT_RUNTIME` and `FLOWAUDIT_DATA` for new configuration; the legacy `SECURITY_SCAN_*` variables remain supported.

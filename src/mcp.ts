@@ -4,10 +4,16 @@ import { z } from "zod";
 import { explorationFrontier } from "./coverage.js";
 import { Scanner } from "./scanner.js";
 import { RemoteScanner } from "./worker.js";
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import { join, resolve } from "node:path";
+import { Onboarding } from "./onboarding.js";
+import { PluginZap } from "./plugin-zap.js";
 export function createMcpServer(scanner: Scanner | RemoteScanner) {
-  const server = new McpServer({ name: "flowaudit", version: "0.3.0" });
+  const server = new McpServer({ name: "flowaudit", version: "0.5.0" });
+  const onboarding = new Onboarding();
+  const setup = new PluginZap(onboarding.home);
+  server.server.onclose = () => { void onboarding.cancel(); };
   const scanId = z.string().uuid(),
     role = z.string();
   const browser = (id: string, method: string, ...args: any[]) =>
@@ -33,6 +39,21 @@ export function createMcpServer(scanner: Scanner | RemoteScanner) {
         };
       }
     });
+  tool("start_login", "Open a local browser for the user to log in, including OTP. Never pass credentials through tools.",
+    { target: z.string().url(), name: z.string(), role: z.string().default("user"), replace: z.boolean().default(false) },
+    (a) => onboarding.start(a.target, a.name, a.role, a.replace));
+  tool("finish_login", "After the user confirms login, capture the session privately. probeContains must be a non-secret label unique to a protected page, not a token or password.",
+    { loginId: z.string().uuid(), probeContains: z.string().min(1).max(160) },
+    (a) => onboarding.finish(a.loginId, a.probeContains));
+  tool("cancel_login", "Close a pending login window without saving credentials.",
+    { loginId: z.string().uuid() }, (a) => onboarding.cancel(a.loginId));
+  tool("create_public_project", "Create a passive anonymous project from a URL; no JSON editing required.",
+    { target: z.string().url(), name: z.string(), probeContains: z.string().optional(), replace: z.boolean().default(false) },
+    (a) => onboarding.publicProject(a.target, a.name, a.probeContains, a.replace));
+  tool("prepare_zap", "Start the plugin's dedicated local ZAP container. Returns immediately; Docker must be running.", {}, () => setup.prepare());
+  tool("setup_status", "Check dedicated ZAP setup progress and readiness.", {}, () => setup.status());
+  tool("enable_project_zap", "Enable healthy dedicated ZAP for a plugin-managed project before creating a scan. Does not enable active mode.",
+    { name: z.string() }, (a) => setup.enable(a.name));
   tool(
     "create_scan",
     "Create a bounded scan from a local project configuration path. No credentials in arguments.",
@@ -237,7 +258,7 @@ export function createMcpServer(scanner: Scanner | RemoteScanner) {
   );
   return server;
 }
-if (import.meta.url === new URL(process.argv[1] || "", "file:").href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
   const scanner = new RemoteScanner();
   const server = createMcpServer(scanner);
   const transport = new StdioServerTransport();

@@ -1,0 +1,16 @@
+{
+  "name": "flowaudit-marketplace",
+  "owner": {
+    "name": "vuongle-mike"
+  },
+  "plugins": [
+    {
+      "name": "flowaudit",
+      "source": "./",
+      "description": "Local browser security scanning with real screenshot flows, ASVS L1 and offline reports."
+    }
+  ],
+  "metadata": {
+    "description": "FlowAudit local browser security scanner for Claude Code"
+  }
+}

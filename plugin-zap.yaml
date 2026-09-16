@@ -1,0 +1,16 @@
+services:
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:2.17.0
+    init: true
+    ports:
+      - "127.0.0.1:18091:8080"
+    command: ["zap.sh", "-daemon", "-host", "0.0.0.0", "-port", "8080", "-config", "api.key=${FLOWAUDIT_ZAP_KEY:?Plugin launcher must provide the API key}", "-config", "api.filexfer=true", "-config", "api.addrs.addr.name=.*", "-config", "api.addrs.addr.regex=true"]
+    environment:
+      FLOWAUDIT_ZAP_KEY: ${FLOWAUDIT_ZAP_KEY}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import os,urllib.request; r=urllib.request.Request('http://127.0.0.1:8080/JSON/core/view/version/',headers={'X-ZAP-API-Key':os.environ['FLOWAUDIT_ZAP_KEY'],'Host':'zap'}); urllib.request.urlopen(r,timeout=4).read()"]
+      interval: 5s
+      timeout: 5s
+      retries: 40

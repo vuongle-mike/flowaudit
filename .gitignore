@@ -17,3 +17,8 @@ projects/
 .DS_Store
 *.sqlite
 *.sqlite-*
+
+# Optional private plugin state overrides
+.flowaudit/
+runtimes/
+zap-key

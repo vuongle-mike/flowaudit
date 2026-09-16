@@ -12,3 +12,15 @@ Codex's initial attempt inside the task filesystem sandbox could not initialize 
 Each client invocation had a 60-second process timeout. Claude additionally had a USD 0.25 request budget and reported zero API cost because authentication failed. The prompts prohibited other tools and scan creation. No approval bypass or automatic login was attempted after these results.
 
 These checks establish actual-client startup/discovery evidence, not successful end-to-end scan acceptance. The separate automated stdio integration tests exercise protocol calls. Complete the two-client fixture workflow in `plugins.md` to establish authenticated browser exploration and real report generation through each client.
+
+## Packaged Claude plugin (0.5.0)
+
+The complete repository-root plugin was validated with Claude CLI, added as a local marketplace and installed into an isolated Claude configuration directory. The installed cache entry reported FlowAudit 0.5.0 enabled with its bundled MCP configuration. This test did not change the user's normal Claude settings.
+
+The installed cached launcher was then exercised through the real stdio MCP SDK from an unrelated working directory with an empty private runtime home. It installed dependencies, built, discovered the onboarding/setup tools, created an anonymous fixture profile, opened Chromium, saved a real screenshot and exported an offline HTML report. A second connection reused the runtime and read the persisted scan. The repeatable command is `node --import tsx scripts/smoke-plugin.ts <installed-plugin-root>`.
+
+Browser integration tests separately exercised manual-login session capture against the fixture, rejection of an anonymous probe marker, private-file permissions, replay of the captured profile, cancellation and external-redirect blocking. The OTP step remains user-driven; these tests do not claim integration with a particular OTP provider.
+
+The dedicated Docker ZAP setup was started, its API authenticated successfully on loopback port 18091, and its configuration attached to a passive project. The test removed only its own Docker project afterward. This verifies setup, not a full ZAP scan against an arbitrary user application.
+
+Full model-directed exploration from an authenticated Claude conversation remains distinct from these packaging, protocol and browser checks; the earlier model authentication limitation still applies.

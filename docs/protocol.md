@@ -41,3 +41,15 @@ Exports use `schemaVersion: 1` and `asvsVersion: "5.0.0"`. They contain the scan
 SQLite and scan evidence files are local working data. Exported reports are redacted for known credentials, common authorization/token/cookie fields and configured sensitive selectors. Configure selectors for application-specific sensitive content before scanning; arbitrary business data cannot be identified reliably by generic redaction. Review the generated report before distributing it.
 
 Do not interpret `completed` as exhaustive application coverage or compliance. Interpret it with the recorded budgets, blockers, role coverage and job outcomes. An interrupted, failed or cancelled scan remains useful evidence and can still be exported.
+
+## Plugin onboarding and setup (0.5.0)
+
+- `start_login(target, name, role?, replace?)`: opens one host browser; returns loginId immediately. User completes password/OTP outside chat.
+- `finish_login(loginId, probeContains)`: verifies a protected HTTP 200 marker against an anonymous baseline; saves a private storageState profile and returns configPath, never cookie contents.
+- `cancel_login(loginId)`: closes the window without saving.
+- `create_public_project(target, name, probeContains?, replace?)`: creates a passive anonymous profile.
+- `prepare_zap()`: starts dedicated Docker ZAP asynchronously; no scan traffic yet.
+- `setup_status()`: reports not-started / starting / ready / failed.
+- `enable_project_zap(name)`: requires healthy ZAP, attaches its loopback API/proxy to the private project; does not enable active scanning. Call before create_scan.
+
+Onboarding paths are host-local under FLOWAUDIT_HOME. The pre-existing container MCP adapter cannot display the host's interactive login window; use the complete root Claude plugin for this workflow.

@@ -1,4 +1,41 @@
-# Use FlowAudit in Codex or Claude Code
+# FlowAudit plugin installation
+
+## Install in Claude Code (recommended)
+
+In Claude Code, run:
+
+```text
+/plugin marketplace add vuongle-mike/flowaudit
+/plugin install flowaudit@flowaudit-marketplace
+```
+
+Start a new session, then ask:
+
+```text
+/flowaudit:flowaudit Scan http://localhost:9000. Open the login browser so I can complete OTP, then continue with a passive scan and an offline report.
+```
+
+The repository root is the complete Claude plugin. It includes its own MCP launcher and runtime source; no checkout path, npm command or hand-written profile is needed. Node.js 20.19+ and npm must already be available. First use downloads locked dependencies and Chromium and builds a private runtime. macOS and Linux are the supported bootstrap platforms; Linux may require Playwright system libraries and a graphical display for login. The initial download can exceed the client's MCP startup timeout; see [setup recovery](#setup-recovery).
+
+`start_login` opens a real browser. Complete login/OTP there, then tell Claude you are done and provide a short non-secret protected-page label, such as “Invoices”. `finish_login` checks that the label is absent without authentication and saves the session locally. No Enter in a separate terminal is needed. Anonymous scans use `create_public_project` directly.
+
+For ZAP checks, Claude calls `prepare_zap`, polls `setup_status`, then calls `enable_project_zap` before starting the scan. Docker must already be installed and running. This starts a dedicated ZAP container on `127.0.0.1:18091`; the browser/scanner stay on the host so interactive login works. A target resolvable only on the host may still need Docker DNS/network configuration. If ZAP cannot start, browser exploration remains available and ZAP checks must be reported as untested.
+
+Profiles, session secrets, scan data and versioned runtimes live under `~/.local/share/flowaudit` (override with `FLOWAUDIT_HOME`). They are outside the plugin cache and survive plugin updates. New profiles are passive; active test workflows still need explicit scoped configuration. Cross-origin SSO and SPA authentication without a usable protected HTTP probe remain unsupported.
+
+To update: `/plugin marketplace update flowaudit-marketplace`, then `/plugin update flowaudit@flowaudit-marketplace`, then start a new session. The older bundles under `plugins/` are advanced adapters for separately managed scanner deployments.
+
+## Setup recovery
+
+Setup logs go to stderr; stdout is reserved for MCP JSON-RPC. The launcher copies only runtime source files into a content-addressed private runtime, uses `npm ci`, builds and installs Chromium once. Warm starts reuse that runtime. A lock prevents concurrent installs; dead process locks are recovered on the next start. Failed installations do not get a ready marker and can be retried. It never installs Node, Docker or privileged Linux system packages.
+
+If the first MCP connection times out during downloads, wait for setup to finish and reconnect. For a persistent failure, ask Claude to run `node "<installed-plugin-root>/scripts/plugin-bootstrap.mjs" --setup-only` with a longer shell timeout, then reconnect. Use the actual path reported by Claude's plugin inventory; never guess a cache path. A machine without a GUI can use an existing CLI/cookie profile instead of `start_login`.
+
+`prepare_zap` runs in the background and `setup_status` reports readiness. Failed setup leaves existing profile settings unchanged. The API key stays in the private home `zap-key` file with mode 0600 and is inherited by the worker; do not paste it into tools or prompts. The dedicated Docker project has a home-specific name. It does not use or reset another manually managed ZAP instance.
+
+The onboarding login window belongs to the MCP connection: disconnect or a 15-minute timeout closes it without saving an unfinished login. Saved profiles and scans survive reconnects. Updates preserve the existing worker; finish active scans and stop the old worker before expecting scanner engine changes to take effect.
+
+## Advanced: separately managed scanner adapters
 
 Both bundles use the same MCP service and byte-identical exploration skill. They require a local scanner checkout, Node.js 20.19 or newer for local mode, and Docker Compose for the full ZAP stack. Installing a bundle does not install Docker, download browsers, start containers or register credentials.
 
