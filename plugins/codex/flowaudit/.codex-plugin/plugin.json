@@ -1,0 +1,22 @@
+{
+  "name": "flowaudit",
+  "version": "0.3.0",
+  "description": "Local web security scanning with Playwright, ZAP, a screen-flow evidence graph and complete ASVS 5.0.0 L1 assessments.",
+  "author": {
+    "name": "FlowAudit contributors"
+  },
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "FlowAudit",
+    "shortDescription": "Scan web apps and inspect evidence by screen.",
+    "longDescription": "Explore authorized web applications, review ZAP findings and ASVS L1 evidence, and export a local interactive report.",
+    "developerName": "FlowAudit contributors",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "defaultPrompt": [
+      "Scan my configured flowaudit project and export the evidence report.",
+      "Review the ASVS L1 evidence for my latest security scan."
+    ]
+  }
+}

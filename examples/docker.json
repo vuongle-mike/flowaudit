@@ -1,0 +1,96 @@
+{
+  "name": "Atlas invoice demo",
+  "includePaths": [
+    "/"
+  ],
+  "excludePaths": [
+    "/api/reset",
+    "/api/metrics",
+    "/redirect-external"
+  ],
+  "roles": {
+    "userA": {
+      "secretRef": "userA",
+      "type": "form",
+      "loginPath": "/login",
+      "usernameSelector": "[name=username]",
+      "passwordSelector": "[name=password]",
+      "submitSelector": "button[type=submit]",
+      "probePath": "/api/me",
+      "probeContains": "AUTHENTICATED_userA"
+    },
+    "userB": {
+      "secretRef": "userB",
+      "type": "form",
+      "loginPath": "/login",
+      "usernameSelector": "[name=username]",
+      "passwordSelector": "[name=password]",
+      "submitSelector": "button[type=submit]",
+      "probePath": "/api/me",
+      "probeContains": "AUTHENTICATED_userB"
+    },
+    "admin": {
+      "secretRef": "admin",
+      "type": "form",
+      "loginPath": "/login",
+      "usernameSelector": "[name=username]",
+      "passwordSelector": "[name=password]",
+      "submitSelector": "button[type=submit]",
+      "probePath": "/api/me",
+      "probeContains": "AUTHENTICATED_admin"
+    }
+  },
+  "secretsFile": "../.secrets/demo.json",
+  "mode": "active",
+  "allowedActions": [],
+  "sensitiveSelectors": [],
+  "limits": {
+    "statesPerRole": 100,
+    "actions": 300,
+    "minutes": 30,
+    "requestsPerSecond": 5
+  },
+  "tests": {
+    "xss": {
+      "role": "userA",
+      "path": "/search",
+      "parameter": "q"
+    },
+    "authorization": [
+      {
+        "name": "Cross-tenant invoice access",
+        "ownerRole": "userA",
+        "attackerRole": "userB",
+        "discoveryPath": "/invoices",
+        "linkSelector": "a[data-invoice-link]",
+        "protectedMarker": "ORG_A_PRIVATE_INVOICE",
+        "asvsIds": [
+          "v5.0.0-8.2.2"
+        ]
+      },
+      {
+        "name": "User accesses admin function",
+        "ownerRole": "admin",
+        "attackerRole": "userA",
+        "discoveryPath": "/invoices",
+        "linkSelector": "a[data-admin-link]",
+        "protectedMarker": "ADMIN_PRIVATE_DATA",
+        "asvsIds": [
+          "v5.0.0-8.2.1"
+        ]
+      }
+    ],
+    "session": {
+      "role": "userA",
+      "logoutPath": "/logout",
+      "protectedPath": "/invoices",
+      "protectedMarker": "Recent invoices"
+    }
+  },
+  "target": "http://fixture:3000",
+  "zap": {
+    "apiUrl": "http://zap:8080",
+    "proxyUrl": "http://zap:8080",
+    "apiKeyEnv": "ZAP_API_KEY"
+  }
+}

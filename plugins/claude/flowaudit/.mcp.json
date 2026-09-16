@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "flowaudit": {
+      "command": "sh",
+      "args": [
+        "-c",
+        "FLOWAUDIT_ROOT=\"${FLOWAUDIT_ROOT:-${SECURITY_SCAN_ROOT:-}}\"; export FLOWAUDIT_ROOT; if [ -z \"${FLOWAUDIT_ROOT:-}\" ]; then echo \"Set FLOWAUDIT_ROOT to the absolute scanner project path before starting the client.\" >&2; exit 64; fi; exec sh \"$FLOWAUDIT_ROOT/plugins/mcp-launch.sh\""
+      ]
+    }
+  }
+}

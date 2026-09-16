@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.runs/
+.secrets/
+*.log
+
+.env
+scan-data/
+demo-results/
+projects/*/secrets.json
+projects/*/last-run.json
+
+# Private target configuration and local artifacts
+projects/
+.env.*
+!.env.example
+.DS_Store
+*.sqlite
+*.sqlite-*

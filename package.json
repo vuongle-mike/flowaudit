@@ -1,0 +1,43 @@
+{
+  "name": "flowaudit",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "flowaudit": "./dist/src/cli.js"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "build": "tsc && node scripts/build-report.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test --test-concurrency=1 test/*.test.ts",
+    "demo": "tsx scripts/demo.ts",
+    "doctor": "tsx src/cli.ts doctor",
+    "mcp": "node dist/src/mcp.js",
+    "fixture": "tsx src/fixture.ts",
+    "init:demo": "node scripts/init-demo.mjs",
+    "test:zap": "ZAP_INTEGRATION=1 node --import tsx --test test/zap.test.ts",
+    "worker:stop": "node --import tsx scripts/stop-worker.ts",
+    "scan": "node dist/src/cli.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "better-sqlite3": "^11.10.0",
+    "playwright": "^1.56.0",
+    "zod": "^3.25.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@xyflow/react": "^12.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "tsx": "^4.20.0",
+    "esbuild": "^0.25.0",
+    "@types/node": "^22.0.0",
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}

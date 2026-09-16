@@ -1,0 +1,78 @@
+name: security-scan
+services:
+  scanner:
+    build: .
+    init: true
+    shm_size: 1gb
+    environment:
+      SECURITY_SCAN_DATA: /data
+      ZAP_API_KEY: ${ZAP_API_KEY:?Set ZAP_API_KEY in .env}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./scan-data:/data
+      - ./projects:/projects:ro
+      - ./examples:/app/examples:ro
+      - ./.secrets:/app/.secrets:ro
+    depends_on:
+      zap:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('/data/worker.json')); fetch('http://127.0.0.1:'+m.port+'/health',{headers:{authorization:'Bearer '+m.token}}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1));",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:2.17.0
+    init: true
+    command:
+      [
+        "zap.sh",
+        "-daemon",
+        "-host",
+        "0.0.0.0",
+        "-port",
+        "8080",
+        "-config",
+        "api.key=${ZAP_API_KEY:?Set ZAP_API_KEY in .env}",
+        "-config",
+        "api.filexfer=true",
+        "-config",
+        "api.addrs.addr.name=.*",
+        "-config",
+        "api.addrs.addr.regex=true",
+      ]
+    environment:
+      ZAP_API_KEY: ${ZAP_API_KEY:?Set ZAP_API_KEY in .env}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import os,urllib.request; u='http://127.0.0.1:8080/JSON/core/view/version/?apikey='+os.environ['ZAP_API_KEY']; urllib.request.urlopen(urllib.request.Request(u,headers={'Host':'zap'}),timeout=4).read()",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - zap-data:/home/zap/.ZAP
+  fixture:
+    build: .
+    command: ["node", "dist/src/fixture.js"]
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      FIXTURE_MODE: ${FIXTURE_MODE:-vulnerable}
+    ports:
+      - "127.0.0.1:13000:3000"
+volumes:
+  zap-data:

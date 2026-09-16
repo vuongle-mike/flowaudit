@@ -1,0 +1,14 @@
+node_modules
+dist
+.runs
+.secrets
+demo-results
+*.zip
+
+.env
+scan-data
+
+.git
+projects
+.env.*
+!.env.example
