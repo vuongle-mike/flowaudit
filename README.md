@@ -27,13 +27,7 @@ For ZAP checks, Claude calls `prepare_zap`, polls `setup_status`, then calls `en
 
 Profiles, session secrets, scan data and versioned runtimes live under `~/.local/share/flowaudit` (override with `FLOWAUDIT_HOME`). They are outside the plugin cache and survive plugin updates. New profiles are passive; active test workflows still need explicit scoped configuration. Cross-origin SSO and SPA authentication without a usable protected HTTP probe remain unsupported.
 
-To update: `/plugin marketplace update flowaudit-marketplace`, then `/plugin update flowaudit@flowaudit-marketplace`, then start a new session. The older bundles under `plugins/` are advanced adapters for separately managed scanner deployments.
-
-## Rename from security-scan
-
-The plugin, MCP server, skill and CLI are now named `flowaudit` (display name: **FlowAudit**). Codex bundle: `plugins/codex/flowaudit`; Claude bundle: `plugins/claude/flowaudit`. Use `FLOWAUDIT_ROOT`, `FLOWAUDIT_RUNTIME` and `FLOWAUDIT_DATA` for new configuration; the legacy `SECURITY_SCAN_*` variables remain supported.
-
-The Compose project name `security-scan` and legacy environment variables remain supported for existing deployments.
+To update: `/plugin marketplace update flowaudit-marketplace`, then `/plugin update flowaudit@flowaudit-marketplace`, then start a new session. The bundles under `plugins/` are advanced adapters for separately managed scanner deployments.
 
 ## Scan another application
 
@@ -235,7 +229,7 @@ Most projects should start with `flowaudit init`. The generated file uses a capt
 - Captured browser-state, form, cookie and bearer authentication require a protected probe URL and a positive authenticated-content marker. The CLI lets a user complete MFA/CAPTCHA in the capture browser.
 - Defaults are 100 states per role, 300 actions, 30 minutes and 5 requests/second. The demo raises throughput only in its ephemeral test config.
 - Passive mode is the default for new configurations. Active mode must be explicitly enabled; demo configurations enable it for their local fixtures.
-- ZAP active scanning keeps the legacy `xss` profile for **rule 40012 on GET query endpoints**. An explicit `tests.activeScan.profile: "deep"` enables a broader interpreter-focused rule set, path-only endpoints, request-shape deduplication, configurable discovery paths and observed POST bodies. POST remains unavailable unless both `methods` includes `POST` and the exact path is present in `allowedActions`.
+- ZAP active scanning provides the `xss` profile for **rule 40012 on GET query endpoints**. An explicit `tests.activeScan.profile: "deep"` enables a broader interpreter-focused rule set, path-only endpoints, request-shape deduplication, configurable discovery paths and observed POST bodies. POST remains unavailable unless both `methods` includes `POST` and the exact path is present in `allowedActions`.
 - A configured `tests.login` workflow separately submits 2-10 bounded POST cases to one exact login endpoint, refreshes CSRF state, compares them with an invalid baseline and records SQL error, authentication and XSS evidence. It does not perform password brute force.
 - Authorization checks need explicitly configured owner/attacker roles, a discovery selector and a protected-content marker. The scanner does not infer authorization from HTTP 200 alone.
 - Logout/session verification is a separate workflow. General exploration blocks logout, payment, delete and other sensitive actions. Permitted mutations require exact endpoint paths in `allowedActions`.

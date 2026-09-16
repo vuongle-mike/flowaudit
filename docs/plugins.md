@@ -23,7 +23,7 @@ For ZAP checks, Claude calls `prepare_zap`, polls `setup_status`, then calls `en
 
 Profiles, session secrets, scan data and versioned runtimes live under `~/.local/share/flowaudit` (override with `FLOWAUDIT_HOME`). They are outside the plugin cache and survive plugin updates. New profiles are passive; active test workflows still need explicit scoped configuration. Cross-origin SSO and SPA authentication without a usable protected HTTP probe remain unsupported.
 
-To update: `/plugin marketplace update flowaudit-marketplace`, then `/plugin update flowaudit@flowaudit-marketplace`, then start a new session. The older bundles under `plugins/` are advanced adapters for separately managed scanner deployments.
+To update: `/plugin marketplace update flowaudit-marketplace`, then `/plugin update flowaudit@flowaudit-marketplace`, then start a new session. The bundles under `plugins/` are advanced adapters for separately managed scanner deployments.
 
 ## Setup recovery
 
